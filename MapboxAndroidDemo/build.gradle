@@ -1,0 +1,129 @@
+apply plugin: 'com.android.application'
+apply from: "$project.rootDir/gradle/script-git-version.gradle"
+apply plugin: 'com.google.firebase.firebase-perf'
+
+
+android {
+    compileSdkVersion androidVersions.compileSdkVersion
+    buildToolsVersion androidVersions.buildToolsVersion
+
+    defaultConfig {
+        applicationId "com.mapbox.mapboxandroiddemo"
+
+        minSdkVersion androidVersions.minSdkVersion
+        targetSdkVersion androidVersions.targetSdkVersion
+
+        versionCode gitVersionCode
+        versionName gitVersionName
+
+        vectorDrawables.useSupportLibrary = true
+
+        buildConfigField "int", "MIN_SDK_VERSION", "$minSdkVersion.apiLevel"
+    }
+
+    flavorDimensions "default"
+
+    productFlavors {
+        gpservices {
+            resValue "string", "firebase_app_id", "1:557332920931:android:bdf11618ae45dd61"
+            resValue "string", "firebase_api_key", "AIzaSyCGCYLyLoi31Hv-pkBO0D51zCyxjngJbz8"
+        }
+
+        nogpservices {
+        }
+    }
+
+    signingConfigs {
+        release {
+            keyAlias System.getenv("BITRISEIO_ANDROID_KEYSTORE_ALIAS")
+            keyPassword System.getenv("BITRISEIO_ANDROID_KEYSTORE_PRIVATE_KEY_PASSWORD")
+            storeFile file("$project.rootDir/mapbox_demo.keystore")
+            storePassword System.getenv("BITRISEIO_ANDROID_KEYSTORE_PASSWORD")
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-Debug'
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        release {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+
+    splits {
+        abi {
+            enable false
+            universalApk false
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+
+    // Wearable application module
+    gpservicesWearApp project(':MapboxAndroidWearDemo')
+
+    // Support libraries
+    implementation dependenciesList.supportGridLayout
+    implementation dependenciesList.supportAppcompatV7
+    implementation dependenciesList.supportCardView
+    implementation dependenciesList.supportRecyclerView
+    implementation dependenciesList.supportDesign
+    implementation dependenciesList.supportCustomTabs
+    implementation dependenciesList.supportV4
+    implementation dependenciesList.supportConstraintLayout
+
+
+    // Mapbox dependencies
+    api (dependenciesList.mapboxMapSdk)
+
+    // Mapbox plugins
+    implementation dependenciesList.mapboxPluginLocationLayer
+    implementation dependenciesList.mapboxPluginBuilding
+    implementation dependenciesList.mapboxPluginTraffic
+    implementation dependenciesList.mapboxPluginGeoJson
+    implementation dependenciesList.mapboxPluginMarkerCluster
+
+    // Mapbox Android UI
+    implementation dependenciesList.mapboxAndroidUI
+
+    // lost
+    implementation dependenciesList.lost
+
+    // Firebase
+    implementation dependenciesList.firebaseCrash
+    implementation dependenciesList.firebasePerf
+    gpservicesImplementation dependenciesList.firebaseCrash
+
+    // Other dependencies
+    implementation dependenciesList.gson
+
+    implementation 'com.github.javiersantos:MaterialStyledDialogs:2.1'
+    implementation 'com.getbase:floatingactionbutton:1.10.1'
+    implementation 'com.afollestad.material-dialogs:commons:0.9.4.5'
+    implementation 'com.github.Cutta:GifView:1.1'
+
+    // Square crew
+    implementation dependenciesList.timber
+    implementation dependenciesList.okhttp3
+    implementation dependenciesList.picasso
+    implementation dependenciesList.retrofit
+    implementation dependenciesList.retrofitGsonConverter
+
+    // Common module
+    implementation project(':SharedCode')
+}
+
+apply from: "${rootDir}/gradle/checkstyle.gradle"
